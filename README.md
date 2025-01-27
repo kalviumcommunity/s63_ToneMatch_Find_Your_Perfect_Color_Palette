@@ -13,7 +13,7 @@ Key Features:
 - Suggestions for Different Categories: The app could provide different categories like "Clothing," "Makeup," and "Accessories," with color suggestions tailored to each.
 - Color Inspiration Gallery: A section where users can browse photos of fashion and makeup looks that match different skin tones.
 
-Tech Stack:
+Tech Stack:=
 
 #### **Frontend:**
 - **HTML/CSS**: For the base structure and styling of the app.
