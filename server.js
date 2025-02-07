@@ -1,14 +1,24 @@
 require("dotenv").config();
 const express = require("express");
+
 const { MongoClient } = require("mongodb");
 
 const app = express();
 const port = 8000;
 
+const connectdataBse = require("./dataBase");
+// database()
+const app = express();
+require('dotenv').config();
+
+const PORT = process.env.PORT || 8000;
+
+
 const client = new MongoClient(process.env.DB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
+connectdataBse();
 
 let dbStatus = "Disconnected";
 
