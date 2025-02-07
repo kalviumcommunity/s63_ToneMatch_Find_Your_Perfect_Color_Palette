@@ -3,9 +3,9 @@ const express = require("express");
 const { MongoClient } = require("mongodb");
 
 const app = express();
-const port = 3000;
+const port = 8000;
 
-const client = new MongoClient(process.env.MONGODB_URI, {
+const client = new MongoClient(process.env.DB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
