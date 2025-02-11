@@ -1,34 +1,31 @@
-require("dotenv").config();
-const express = require("express");
-const { MongoClient } = require("mongodb");
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const { resolve } = require('path');
+const menuRoutes = require('./routes'); // Import routes properly
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 3000;
 
-const client = new MongoClient(process.env.DB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+// Middleware
+app.use(express.json());  
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.error('MongoDB Connection Error:', err));
+
+// Serve Static Files
+app.use(express.static('static'));
+
+// Routes
+app.get('/', (req, res) => {
+  res.sendFile(resolve(__dirname, 'pages/index.html'));
 });
 
-let dbStatus = "Disconnected";
-
-async function connectDB() {
-    try {
-        await client.connect();
-        dbStatus = "Connected to MongoDB";
-        console.log(dbStatus);
-    } catch (error) {
-        dbStatus = "Failed to connect to MongoDB";
-        console.error(error);
-    }
-}
-
-connectDB();
-
-app.get("/", (req, res) => {
-    res.send(`Database Connection Status: ${dbStatus}`);
-});
+// Register Routes
+app.use('/api', menuRoutes); // Prefix the API routes with `/api`
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });
