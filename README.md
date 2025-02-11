@@ -33,7 +33,7 @@ Tech Stack:==
  
 #### **Deployment:**
 - **Netlify or GitHub Pages**: Frontend hosting.
-- **Heroku**: Backend hosting for file uploads and processing logic.
+- **Heroku**: Backend hosting for file uploads and processing logic
 
 - **Fun and Practical**: It combines fashion, beauty, and technology. It is a way for users to have fun in discovering colors that suit them best.
   The
