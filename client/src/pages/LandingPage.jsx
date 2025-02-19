@@ -7,7 +7,7 @@ export default function LandingPage() {
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result);
@@ -18,7 +18,7 @@ export default function LandingPage() {
   };
 
   const generateColorPalette = () => {
-    // Simulated color extraction process (Replace with actual library later)
+    // Placeholder for actual color extraction (replace with Color Thief)
     setPalette(["#ff5733", "#33ff57", "#3357ff", "#f4a261", "#e76f51"]);
   };
 
@@ -40,6 +40,7 @@ export default function LandingPage() {
         <p className="subtitle">
           Upload an image and discover the best colors for your clothing, makeup, and accessories.
         </p>
+        {/* Styled Upload Button */}
         <label className="upload-btn">
           Upload Image
           <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -48,7 +49,7 @@ export default function LandingPage() {
 
       {/* Uploaded Image Display */}
       {image && (
-        <div className="image-section">
+        <div className="image-section fade-in">
           <h2>Uploaded Image</h2>
           <img src={image} alt="Uploaded" className="uploaded-image" />
         </div>
@@ -56,7 +57,7 @@ export default function LandingPage() {
 
       {/* Recommended Color Palette */}
       {palette.length > 0 && (
-        <section className="palette-section">
+        <section className="palette-section fade-in">
           <h2>Your Recommended Palette</h2>
           <div className="palette-container">
             {palette.map((color, index) => (

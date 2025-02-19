@@ -1,5 +1,54 @@
 /* LandingPage.css */
 
+.upload-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff4081, #ff79a1);
+  color: white;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover Effect */
+.upload-btn:hover {
+  background: linear-gradient(135deg, #d81b60, #ff4081);
+  transform: scale(1.05);
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Active Effect (when clicked) */
+.upload-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Add Glow Effect */
+.upload-btn::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 10%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.upload-btn:hover::after {
+  opacity: 1;
+}
+
+
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
