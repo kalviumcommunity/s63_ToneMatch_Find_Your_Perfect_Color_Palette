@@ -1,14 +1,21 @@
 const mongoose = require("mongoose");
 
 const connectDatabase = () => {
+    const mongoUri = process.env.MONGO_URI;
+    
+    if (!mongoUri) {
+        console.error("❌ MongoDB URI is missing! Check your .env file.");
+        return;
+    }
+
     mongoose
-        .connect(process.env.DB_URL)
+        .connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
         .then((data) => {
-            console.log(`MongoDB connected with server: ${data.connection.host}`)
+            console.log(`✅ MongoDB connected: ${data.connection.host}`);
         })
         .catch((err) => {
-            console.error(`Database connection failed: ${err.messsage}`)
-        })
-} 
+            console.error(`❌ Database connection failed: ${err.message}`);
+        });
+};
 
 module.exports = connectDatabase;
