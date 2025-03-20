@@ -1,37 +1,28 @@
-require("dotenv").config(); // Load environment variables
-
 const express = require("express");
-const { resolve } = require("path");
-const connectDatabase = require("./database"); 
+require("dotenv").config();
+const connectDatabase = require("./database"); // ✅ Ensure correct path
 const cors = require("cors");
 
-const menuRoutes = require("./routes"); 
+const menuRoutes = require("./routes");
 const entityRoutes = require("./entityRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Enable CORS before routes
-app.use(cors({
-  origin: "http://localhost:5173",  // Allow frontend
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization"
-}));
+// ✅ Connect to Database and ensure it's a valid async function
+(async () => {
+  await connectDatabase();
+})();
 
-// ✅ Middleware (apply before routes)
+app.use(cors());
 app.use(express.json());
-app.use(express.static("static"));
 
-// ✅ Connect to Database
-connectDatabase();
-
-// ✅ Register API Routes
+// ✅ API Routes
 app.use("/api/menu", menuRoutes);
-app.use("/api/entities", entityRoutes);  // Correct path
+app.use("/api/entities", entityRoutes);
 
-// ✅ Test Route
 app.get("/", (req, res) => {
-  res.sendFile(resolve(__dirname, "pages/index.html"));
+  res.send("Server is running...");
 });
 
 // ✅ Start Server

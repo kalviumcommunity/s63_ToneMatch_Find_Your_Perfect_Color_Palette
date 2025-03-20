@@ -1,9 +1,18 @@
 import { useState } from "react";
 
 const AddEntity = ({ onEntityAdded }) => {
-  const [formData, setFormData] = useState({ name: "", description: "" });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({ name: "", description: "", email: "" });
+  const [errors, setErrors] = useState({}); 
+
+  const validateForm = () => {
+    let newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (formData.description.length < 10) newErrors.description = "Description must be at least 10 characters long";
+    if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Valid email is required"; // ✅ Validate email format
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -11,8 +20,7 @@ const AddEntity = ({ onEntityAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    if (!validateForm()) return;
 
     try {
       const response = await fetch("http://localhost:3000/api/entities", {
@@ -21,16 +29,14 @@ const AddEntity = ({ onEntityAdded }) => {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to add entity");
-      }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.errors?.[0]?.msg || "Failed to add entity");
 
-      setFormData({ name: "", description: "" });
-      onEntityAdded(); // Refresh the list after adding
+      setFormData({ name: "", description: "", email: "" });
+      setErrors({});
+      onEntityAdded(); 
     } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+      console.error("Error:", error.message);
     }
   };
 
@@ -46,6 +52,8 @@ const AddEntity = ({ onEntityAdded }) => {
           onChange={handleChange}
           required
         />
+        {errors.name && <p className="error">{errors.name}</p>}
+
         <textarea
           name="description"
           placeholder="Description"
@@ -53,11 +61,20 @@ const AddEntity = ({ onEntityAdded }) => {
           onChange={handleChange}
           required
         />
-        <button type="submit" disabled={loading}>
-          {loading ? "Adding..." : "Add Entity"}
-        </button>
+        {errors.description && <p className="error">{errors.description}</p>}
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        {errors.email && <p className="error">{errors.email}</p>}
+
+        <button type="submit">Add Entity</button>
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };
