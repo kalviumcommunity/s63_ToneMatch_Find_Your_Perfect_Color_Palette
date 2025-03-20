@@ -1,23 +1,41 @@
 const express = require("express");
+const { body, validationResult } = require("express-validator");
 const router = express.Router();
 const Entity = require("./entity");
 
-// ✅ Add a new entity
-router.post("/", async (req, res) => {
-  try {
-    const { name, description } = req.body;
-    if (!name || !description) {
-      return res.status(400).json({ message: "All fields are required" });
+// ✅ Add a new entity with validation
+router.post(
+  "/",
+  [
+    body("name").notEmpty().withMessage("Name is required"),
+    body("description")
+      .isLength({ min: 10 })
+      .withMessage("Description must be at least 10 characters long"),
+    body("email")
+      .notEmpty()
+      .withMessage("Email is required")
+      .isEmail()
+      .withMessage("Invalid email format")
+      .matches(/@gmail\.com$/)
+      .withMessage("Only Gmail addresses are allowed"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    const newEntity = new Entity({ name, description });
-    await newEntity.save();
-    res.status(201).json(newEntity);
-  } catch (error) {
-    console.error("Error adding entity:", error);
-    res.status(500).json({ message: "Server error", error });
+    try {
+      const { name, description, email } = req.body;
+      const newEntity = new Entity({ name, description, email });
+      await newEntity.save();
+      res.status(201).json(newEntity);
+    } catch (error) {
+      console.error("Error adding entity:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
   }
-});
+);
 
 // ✅ Get all entities
 router.get("/", async (req, res) => {
@@ -30,27 +48,47 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✅ Update an entity
-router.put("/:id", async (req, res) => {
-  try {
-    const { name, description } = req.body;
-
-    const updatedEntity = await Entity.findByIdAndUpdate(
-      req.params.id,
-      { name, description },
-      { new: true }
-    );
-
-    if (!updatedEntity) {
-      return res.status(404).json({ message: "Entity not found" });
+// ✅ Update an entity with validation
+router.put(
+  "/:id",
+  [
+    body("name").optional().notEmpty().withMessage("Name cannot be empty"),
+    body("description")
+      .optional()
+      .isLength({ min: 10 })
+      .withMessage("Description must be at least 10 characters long"),
+    body("email")
+      .optional()
+      .isEmail()
+      .withMessage("Invalid email format")
+      .matches(/@gmail\.com$/)
+      .withMessage("Only Gmail addresses are allowed"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    res.json(updatedEntity);
-  } catch (error) {
-    console.error("Error updating entity:", error);
-    res.status(500).json({ message: "Server error", error });
+    try {
+      const { name, description, email } = req.body;
+      const updatedEntity = await Entity.findByIdAndUpdate(
+        req.params.id,
+        { name, description, email },
+        { new: true }
+      );
+
+      if (!updatedEntity) {
+        return res.status(404).json({ message: "Entity not found" });
+      }
+
+      res.json(updatedEntity);
+    } catch (error) {
+      console.error("Error updating entity:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
   }
-});
+);
 
 // ✅ Delete an entity
 router.delete("/:id", async (req, res) => {
