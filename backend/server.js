@@ -1,30 +1,40 @@
-require("dotenv").config(); // Ensure this is the first line
+require("dotenv").config(); // Load environment variables
 
 const express = require("express");
 const { resolve } = require("path");
-const connectDatabase = require("./database"); // Import the fixed database connection function
-const menuRoutes = require("./routes"); // Ensure this is the correct path to your routes
+const connectDatabase = require("./database"); 
+const cors = require("cors");
+
+const menuRoutes = require("./routes"); 
+const entityRoutes = require("./entityRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ✅ Enable CORS before routes
+app.use(cors({
+  origin: "http://localhost:5173",  // Allow frontend
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization"
+}));
+
+// ✅ Middleware (apply before routes)
 app.use(express.json());
-
-// Connect to Database
-connectDatabase();
-
-// Serve Static Files
 app.use(express.static("static"));
 
-// Routes
+// ✅ Connect to Database
+connectDatabase();
+
+// ✅ Register API Routes
+app.use("/api/menu", menuRoutes);
+app.use("/api/entities", entityRoutes);  // Correct path
+
+// ✅ Test Route
 app.get("/", (req, res) => {
   res.sendFile(resolve(__dirname, "pages/index.html"));
 });
 
-// Register API Routes
-app.use("/api", menuRoutes);
-
+// ✅ Start Server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
