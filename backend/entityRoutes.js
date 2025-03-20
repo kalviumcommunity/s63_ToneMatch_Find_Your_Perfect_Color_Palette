@@ -30,4 +30,42 @@ router.get("/", async (req, res) => {
   }
 });
 
+// ✅ Update an entity
+router.put("/:id", async (req, res) => {
+  try {
+    const { name, description } = req.body;
+
+    const updatedEntity = await Entity.findByIdAndUpdate(
+      req.params.id,
+      { name, description },
+      { new: true }
+    );
+
+    if (!updatedEntity) {
+      return res.status(404).json({ message: "Entity not found" });
+    }
+
+    res.json(updatedEntity);
+  } catch (error) {
+    console.error("Error updating entity:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// ✅ Delete an entity
+router.delete("/:id", async (req, res) => {
+  try {
+    const deletedEntity = await Entity.findByIdAndDelete(req.params.id);
+
+    if (!deletedEntity) {
+      return res.status(404).json({ message: "Entity not found" });
+    }
+
+    res.json({ message: "Entity deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting entity:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
 module.exports = router;
