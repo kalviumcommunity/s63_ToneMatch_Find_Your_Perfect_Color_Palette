@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import AddEntity from "../pages/AddEntity";
+import { Link } from "react-router-dom";
+import AddEntity from "./AddEntity";
 
 const EntitiesPage = () => {
   const [entities, setEntities] = useState([]);
@@ -7,12 +8,10 @@ const EntitiesPage = () => {
   const fetchEntities = async () => {
     try {
       const response = await fetch("http://localhost:3000/api/entities");
-      if (!response.ok) throw new Error("Failed to fetch entities");
-      
       const data = await response.json();
       setEntities(data);
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error("Error fetching entities:", error);
     }
   };
 
@@ -20,20 +19,32 @@ const EntitiesPage = () => {
     fetchEntities();
   }, []);
 
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/entities/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete entity");
+
+      setEntities(entities.filter((entity) => entity._id !== id));
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  };
+
   return (
     <div>
-      <h1>Entities List</h1>
+      <h1>Entities</h1>
       <AddEntity onEntityAdded={fetchEntities} />
       <ul>
-        {entities.length > 0 ? (
-          entities.map((entity) => (
-            <li key={entity._id}>
-              <strong>{entity.name}</strong>: {entity.description}
-            </li>
-          ))
-        ) : (
-          <p>No entities found</p>
-        )}
+        {entities.map((entity) => (
+          <li key={entity._id}>
+            {entity.name} - {entity.description}
+            <Link to={`/update/${entity._id}`}><button>Edit</button></Link>
+            <button onClick={() => handleDelete(entity._id)}>Delete</button>
+          </li>
+        ))}
       </ul>
     </div>
   );
