@@ -18,6 +18,7 @@ router.post(
       .withMessage("Invalid email format")
       .matches(/@gmail\.com$/)
       .withMessage("Only Gmail addresses are allowed"),
+    
   ],
   async (req, res) => {
     const errors = validationResult(req);
