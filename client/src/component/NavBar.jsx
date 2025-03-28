@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTheme } from "../utils/ThemeContext";
 
 const NavBar = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -114,6 +116,17 @@ const NavBar = () => {
             >
               Profile
             </Link>
+          </li>
+          <li className="nav-item">
+            <button 
+              className="theme-toggle" 
+              onClick={toggleDarkMode}
+              aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              <span className="theme-toggle-icon">
+                {darkMode ? "☀️" : "🌙"}
+              </span>
+            </button>
           </li>
         </ul>
       </div>

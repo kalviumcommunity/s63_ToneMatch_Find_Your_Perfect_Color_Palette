@@ -4,41 +4,71 @@ import { motion } from "framer-motion";
 import AddEntity from "./AddEntity";
 import UserFilter from "../src/component/UserFilter";
 import ColorInspirationSection from "../src/component/ColorInspirationSection";
+import { 
+  fetchEntities, 
+  fetchEntitiesByUser, 
+  seedEntities 
+} from "../src/utils/api";
 
 const EntitiesPage = () => {
   const [entities, setEntities] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [userRefreshTrigger, setUserRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    fetchUsers();
-    fetchEntities(selectedUser);
+    loadEntities(selectedUser);
   }, [selectedUser]);
 
-  const fetchEntities = async (userId = "") => {
+  const loadEntities = async (userId = "") => {
     setLoading(true);
+    setError(null);
     try {
-      const url = userId ? `http://localhost:3000/api/entities/user/${userId}` : "http://localhost:3000/api/entities";
-      const response = await fetch(url);
-      const data = await response.json();
-      setEntities(data);
+      let data;
+      
+      if (userId) {
+        data = await fetchEntitiesByUser(userId);
+      } else {
+        data = await fetchEntities();
+      }
+      
+      // If no entities found, try seeding
+      if (data.length === 0 && !userId) {
+        try {
+          await seedEntities();
+          data = await fetchEntities();
+        } catch (seedError) {
+          console.error("Error seeding entities:", seedError);
+          // Continue with empty data if seeding fails
+        }
+      }
+      
+      // Ensure entities have valid created_by data
+      const validEntities = data.map(entity => {
+        if (entity.created_by && typeof entity.created_by === 'object' && (entity.created_by.name || entity.created_by.username)) {
+          return entity;
+        } else {
+          // If created_by is not a valid user object, set a placeholder
+          return {
+            ...entity,
+            created_by: { name: "Unknown Creator", _id: entity.created_by || "" }
+          };
+        }
+      });
+      
+      setEntities(validEntities);
     } catch (error) {
-      console.error("Error fetching entities:", error);
+      console.error("Error loading entities:", error);
+      setError("Failed to load entities. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/api/users");
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
+  const handleUserSelect = (userId) => {
+    setSelectedUser(userId);
   };
 
   const handleDelete = async (id) => {
@@ -46,16 +76,19 @@ const EntitiesPage = () => {
       try {
         const response = await fetch(`http://localhost:3000/api/entities/${id}`, {
           method: "DELETE",
+          credentials: 'include'
         });
         
         if (response.ok) {
           // Refresh the entities list after deletion
-          fetchEntities(selectedUser);
+          loadEntities(selectedUser);
         } else {
           console.error("Failed to delete entity");
+          setError("Failed to delete entity. Please try again.");
         }
       } catch (error) {
         console.error("Error deleting entity:", error);
+        setError("Error deleting entity. Please try again.");
       }
     }
   };
@@ -85,7 +118,10 @@ const EntitiesPage = () => {
         </button>
         
         {/* User selection */}
-        <UserFilter users={users} onUserSelect={setSelectedUser} />
+        <UserFilter 
+          onUserSelect={handleUserSelect} 
+          refreshTrigger={userRefreshTrigger}
+        />
       </div>
 
       {/* Conditionally render the AddEntity form */}
@@ -97,9 +133,9 @@ const EntitiesPage = () => {
           className="add-entity-container"
         >
           <AddEntity onEntityAdded={() => { 
-            fetchEntities(selectedUser); 
-            fetchUsers();
+            loadEntities(selectedUser);
             setShowAddForm(false); // Hide form after successful submission
+            setUserRefreshTrigger(prev => prev + 1); // Trigger UserFilter refresh
           }} />
         </motion.div>
       )}
@@ -107,6 +143,7 @@ const EntitiesPage = () => {
       {/* Entities List */}
       <div className="entities-list-container">
         <h2>Your Color Entities</h2>
+        {error && <p className="error-message">{error}</p>}
         {loading ? (
           <p className="loading">Loading entities...</p>
         ) : (
@@ -122,6 +159,9 @@ const EntitiesPage = () => {
                   <h3>{entity.name}</h3>
                   <p>{entity.description}</p>
                   <div className="entity-email">{entity.email}</div>
+                  <div className="entity-creator">
+                    Created by: {entity.created_by && (entity.created_by.name || entity.created_by.username) || "Unknown Creator"}
+                  </div>
                   <div className="entity-actions">
                     <Link to={`/entity/update/${entity._id}`}>
                       <button className="edit-btn">Edit</button>

@@ -1,16 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
+import { fetchUsers, createEntity, seedUsers } from "../src/utils/api";
 
 const AddEntity = ({ onEntityAdded }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    email: "",
+    email: ""
   });
+  const [users, setUsers] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch users when component mounts
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchUsers();
+        
+        // If no users found, try seeding
+        if (data.length === 0) {
+          await seedUsers();
+          const seededUsers = await fetchUsers();
+          setUsers(seededUsers);
+        } else {
+          setUsers(data);
+        }
+      } catch (error) {
+        console.error("Error loading users:", error);
+        setErrors(prev => ({ ...prev, users: "Failed to load users" }));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
+  }, []);
 
   const validateForm = () => {
     let newErrors = {};
@@ -40,16 +69,19 @@ const AddEntity = ({ onEntityAdded }) => {
     setSubmitSuccess(false);
 
     try {
-      const response = await fetch("http://localhost:3000/api/entities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      // Add created_by field to the data being sent to the API
+      const entityData = {
+        ...formData,
+        created_by: users.length > 0 ? users[0]._id : ""
+      };
+      
+      await createEntity(entityData);
+
+      setFormData({ 
+        name: "", 
+        description: "", 
+        email: "" 
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.errors?.[0]?.msg || "Failed to add entity");
-
-      setFormData({ name: "", description: "", email: "" });
       setErrors({});
       setSubmitSuccess(true);
       
@@ -67,6 +99,14 @@ const AddEntity = ({ onEntityAdded }) => {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="add-entity-form loading">
+        <p>Loading form...</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -143,10 +183,12 @@ const AddEntity = ({ onEntityAdded }) => {
           {errors.email && <p className="error-text">{errors.email}</p>}
         </div>
 
+        {errors.users && <p className="error-text">{errors.users}</p>}
+
         <motion.button 
           type="submit"
           className="submit-button"
-          disabled={isSubmitting}
+          disabled={isSubmitting || users.length === 0}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

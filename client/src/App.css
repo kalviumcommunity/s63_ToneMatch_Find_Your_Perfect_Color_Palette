@@ -20,6 +20,63 @@
   --text-dark: #212529;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  
+  /* Background colors */
+  --bg-primary: white;
+  --bg-secondary: var(--neutral-light);
+  --bg-tertiary: var(--neutral-medium);
+  
+  /* Card and container backgrounds */
+  --card-bg: white;
+  --container-bg: white;
+}
+
+/* Dark Mode Variables */
+.dark-mode {
+  --primary-color: #8a7aed; /* Lighter Slate Blue for dark mode */
+  --primary-light: #b0a1f0;
+  --primary-dark: #5a4dab;
+  --secondary-color: #ff9e7f; /* Lighter Coral for dark mode */
+  --secondary-light: #ffbcac;
+  --secondary-dark: #ff6c51;
+  --neutral-light: #2a2a2a;
+  --neutral-medium: #3a3a3a;
+  --neutral-dark: #e9ecef;
+  --text-light: #ffffff;
+  --text-dark: #e9ecef;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  
+  /* Background colors */
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2a2a2a;
+  
+  /* Card and container backgrounds */
+  --card-bg: #1e1e1e;
+  --container-bg: #1e1e1e;
+}
+
+/* Dark Mode Toggle Button */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  margin-left: 1rem;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+.theme-toggle-icon {
+  font-size: 1.2rem;
 }
 
 /* General Styling */
